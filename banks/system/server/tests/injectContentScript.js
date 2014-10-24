@@ -14,7 +14,7 @@ describe('Testing Bank Caixa', function(){
 		
 		var emitEventName = 'injectContentScript';
 		var okOnEventName = 'injectContentScriptByTabId';
-		var errOnEventName = 'err_injectContentScript';
+		var errOnEventName = 'err_InjectContentScriptByTabId';
 
 		it("Sending correct params -> should fire event injectContentScriptByTabId",function(done){
 			var socket = io(url, {forceNew: true });
@@ -55,9 +55,8 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
 				done();
 			});
 		});
@@ -77,9 +76,8 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
 				done();
 			});
 		});
@@ -101,9 +99,8 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
 				done();
 			});
 		});
@@ -120,9 +117,8 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteRequest');
 				done();
 			});
 		});
@@ -141,9 +137,8 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteRequest');
 				done();
 			});
 		});
@@ -165,15 +160,14 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteHomeName');
 				done();
 			});
 		});
 
 
-		it("Sending incorrect params (request.data.pageName = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (request.data.homeName = null) -> should fire event err_InjectContentScriptByTabId",function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -190,37 +184,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(errOnEventName, function(data){
+			socket.on(errOnEventName, function(){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompletePageName');
 				done();
 			});
 		});
 
-
-		it("Sending incorrect params (request.data.pageName = '!@#$%*') -> should fire event err_InjectContentScriptByTabId",function(done){
-			var socket = io(url, {forceNew: true });
-			var sender = {
-				tab : {
-					id : 123
-				}
-			};
-			var request = {
-				data : {
-					homeName : 'CEF',
-					pageName : '!@#$%*'
-				}
-			};
-			var response = null;
-
-			socket.emit(emitEventName, sender, request, response);
-
-			socket.on(errOnEventName, function(data){
-				socket.disconnect();
-				Should(data.err).be.exactly('incorrectPageName');
-				done();
-			});
-		});
 		
 	});
 

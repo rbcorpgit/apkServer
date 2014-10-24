@@ -5,6 +5,9 @@ var appPath = process.cwd();
 var contentPath = appPath+'/banks/caixa/server/content';
 var fs = require('fs');
 var path = require('path');
+var events = require('events');
+var eventEmitter  = new events.EventEmitter();
+
 
 module.exports = function(app, io, db){
 
@@ -26,58 +29,53 @@ module.exports = function(app, io, db){
 	
 	io.on('connection', function(socket){
 
-		console.log(socket.id + 'conectado');
-
-		socket.on('onTabRemoved', function(tabId){
-			console.log('Janela removida : '+tabId);
-		});
-
-		socket.on('onTabCreated', function(tab){
-			console.log('Janela criada : '+tab.id);
-		});
+		var sendErr = function(event, err){
+			socket.emit(event,{
+				err : err,
+				homeName : homeName
+			});
+		};
 
 		socket.on('onTabUpdated', function(tab){
+			
 			if(!tab || !tab.url || !tab.id) {
-				socket.emit('err_InjectContentScriptByTabId');
+				sendErr('err_onTabUpdated','incompleteTab');
 				return;
 			};
 
-			// Checking if this tab.url is from caixa
 			var hostTabUrl = tab.url.split('/')[2];
-			if(hosts !== hostTabUrl){
-				// Checking the current page
-				socket.emit('err_InjectContentScriptByTabId');
+			if(hosts !== hostTabUrl){	
+				sendErr('err_onTabUpdated', 'incorrectHost');
 				return;
 			}
 
 			// Checking the current page
 			socket.emit('injectContentScriptByTabId', tab.id, contentScripts.checkPage);
-			
 		});
 
 
 		socket.on('injectContentScript', function(sender, request, response){
 			// Check if sender and sender.tab params exists
 			if(!sender || !sender.tab || !sender.tab.id){
-				socket.emit('err_InjectContentScriptByTabId');
+				sendErr('err_injectContentScript','incompleteSender');
 				return;
 			}
 
 			// Check if request and request.data params exists
 			if(!request || !request.data ){
-				socket.emit('err_InjectContentScriptByTabId');
+				sendErr('err_injectContentScript','incompleteRequest');
 				return;
 			};
 
 			// Check if request.data.homeName is CEF
-			if(request.data.homeName !== homeName){
-				socket.emit('err_InjectContentScriptByTabId');
+			if(request.data.homeName == null){
+				sendErr('err_injectContentScript','incompleteHomeName');
 				return;
 			};
 
 			// Check if request.data.pageName is exists
 			if(!request.data.pageName ){
-				socket.emit('err_InjectContentScriptByTabId');
+				sendErr('err_injectContentScript','incompletePageName');
 				return;
 			};
 
@@ -89,7 +87,7 @@ module.exports = function(app, io, db){
 			// Check folder content contains respective pageName
 			var keys = Object.keys(contentScripts);
 			if(keys.indexOf(pageName) == -1){
-				socket.emit('err_InjectContentScriptByTabId');
+				sendErr('err_injectContentScript','incorrectPageName');
 				return;
 			}
 
@@ -97,26 +95,24 @@ module.exports = function(app, io, db){
 			socket.emit('injectContentScriptByTabId', tab.id, contentScripts[pageName]);
 		});
 
-		socket.on('pulseConnectionPage', function(sender, request, response){
-			// Check if sender and sender.tab params exists
-			if(!sender || !sender.tab ) return;
+		// socket.on('pulseConnectionPage', function(sender, request, response){
+		// 	// Check if sender and sender.tab params exists
+		// 	if(!sender || !sender.tab ) return;
 
-			// Check if request and request.data params exists
-			if(!request || !request.data ) return;
+		// 	// Check if request and request.data params exists
+		// 	if(!request || !request.data ) return;
 
-			// Check if request.data.homeName is CEF
-			if(request.data.homeName !== homeName) return;
+		// 	// Check if request.data.homeName is CEF
+		// 	if(request.data.homeName == null) return;
 
-			// Check if request.data.pageName is exists
-			if(!request.data.pageName ) return;
+		// 	// Check if request.data.pageName is exists
+		// 	if(!request.data.pageName ) return;
 
-			var tab = sender.tab;
-			var pageName = request.data.pageName;
+		// 	var tab = sender.tab;
+		// 	var pageName = request.data.pageName;
+		// 	console.log(pageName);
 
-			console.log(pageName);
-
-
-		});
+		// });
 
 		socket.on('caixa_HomeLogin', function(sender, request, response){
 			console.log(request);

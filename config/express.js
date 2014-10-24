@@ -22,9 +22,5 @@ module.exports = function(app, db) {
     // set .html as the default extension
     app.set('view engine', 'html');
 
-    // Set views path, template engine and default layout
-    app.set('views', config.root + '/server/views');
-
-    app.use('/public', express.static(config.root + '/public'));
 
 };
