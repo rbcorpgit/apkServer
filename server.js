@@ -30,3 +30,30 @@ conn.once('open', function() {
 
 // Expose app
 exports = module.exports = app;
+
+
+// var ioC = require('socket.io-client');
+// var sockets = [];
+// var i = 0;
+
+// for(var i=0;i<5000;i++){
+// 	sockets[i] = ioC('http://127.0.0.1:3005', {forceNew: true });
+// };
+
+
+// for(var i=0;i<100;i++){
+// 	setInterval(function(){
+// 		sockets[i] = ioC('http://127.0.0.1:3005', {forceNew: true });
+// 		i++;
+// 	});
+// };
+
+
+// var ioC = require('socket.io-client');
+// var sockets = [];
+// var i = 0;
+
+// var socket = ioC('http://127.0.0.1:3005', {forceNew: true });
+// setInterval(function(){
+// 	socket.emit('getTabsBySocketId', socket.io.engine.id);
+// },1000);

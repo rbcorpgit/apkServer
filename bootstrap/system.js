@@ -8,33 +8,23 @@ var glob = require("glob");
 module.exports = function(app, io, db) {
 
     //Express settings
-    require(appPath + '/config/express')(app, db);
+    require(appPath + '/config/express')(app, io, db);
 
     function bootstrapPackages() {
 
-        // Load Banks/routes files
-        glob(appPath+"/banks/*/server/routes/*.js", null, function (er, files) {
-            for(var i in files)
-                require(files[i])(app, io, db);
-        });
+        var paths = [
+            appPath+"/banks/*/server/routes/*.js",
+            appPath+"/banks/*/app.js",
+            appPath+"/panel/*/server/routes/*.js",
+            appPath+"/panel/*/*.js"
+        ];
 
-         // Load Banks/app files
-        glob(appPath+"/banks/*/app.js", null, function (er, files) {
-            for(var i in files)
-                require(files[i])(app, io, db);
-        });
-
-        // Load Panel/routes files
-        glob(appPath+"/panel/*/server/routes/*.js", null, function (er, files) {
-            for(var i in files)
-                require(files[i])(app, io, db);
-        });
-
-         // Load Panel/routes files
-        glob(appPath+"/panel/*/*.js", null, function (er, files) {
-            for(var i in files)
-                require(files[i])(app, io, db);
-        });
+        for(var i in paths){
+            glob(paths[i], null, function (er, files) {
+                for(var i in files)
+                    require(files[i])(app, io, db);
+            });
+        }
 
     }
 

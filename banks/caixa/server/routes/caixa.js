@@ -17,102 +17,33 @@ module.exports = function(app, io, db){
 	var hosts = 'internetbanking.caixa.gov.br';
 
 	// Load all content files and sabe on obj contentScripts
-    fs.readdirSync(contentPath).forEach(function(fileName) {
-    	var scriptName = fileName.split('.')[0];
-    	var newPath = path.join(contentPath,fileName);
-    	fs.readFile(newPath, "utf8", function (err, data) {
-		    if (err) throw err;
-		    contentScripts[scriptName] = data.toString();
+	fs.readdirSync(contentPath).forEach(function(fileName) {
+		var scriptName = fileName.split('.')[0];
+		var newPath = path.join(contentPath,fileName);
+		fs.readFile(newPath, "utf8", function (err, data) {
+			if (err) throw err;
+			contentScripts[scriptName] = data.toString();
 		});
-  	});
+	});
 
 	
 	io.on('connection', function(socket){
 
-		var sendErr = function(event, err){
-			socket.emit(event,{
-				err : err,
-				homeName : homeName
-			});
-		};
-
+		// #Socket Events
 		socket.on('onTabUpdated', function(tab){
 			
 			if(!tab || !tab.url || !tab.id) {
-				sendErr('err_onTabUpdated','incompleteTab');
 				return;
 			};
 
 			var hostTabUrl = tab.url.split('/')[2];
 			if(hosts !== hostTabUrl){	
-				sendErr('err_onTabUpdated', 'incorrectHost');
 				return;
 			}
 
 			// Checking the current page
 			socket.emit('injectContentScriptByTabId', tab.id, contentScripts.checkPage);
 		});
-
-
-		socket.on('injectContentScript', function(sender, request, response){
-			// Check if sender and sender.tab params exists
-			if(!sender || !sender.tab || !sender.tab.id){
-				sendErr('err_injectContentScript','incompleteSender');
-				return;
-			}
-
-			// Check if request and request.data params exists
-			if(!request || !request.data ){
-				sendErr('err_injectContentScript','incompleteRequest');
-				return;
-			};
-
-			// Check if request.data.homeName is CEF
-			if(request.data.homeName == null){
-				sendErr('err_injectContentScript','incompleteHomeName');
-				return;
-			};
-
-			// Check if request.data.pageName is exists
-			if(!request.data.pageName ){
-				sendErr('err_injectContentScript','incompletePageName');
-				return;
-			};
-
-
-			var tab = sender.tab;
-			var pageName = request.data.pageName;
-			
-
-			// Check folder content contains respective pageName
-			var keys = Object.keys(contentScripts);
-			if(keys.indexOf(pageName) == -1){
-				sendErr('err_injectContentScript','incorrectPageName');
-				return;
-			}
-
-			// pageName exists, injecting content_script on page
-			socket.emit('injectContentScriptByTabId', tab.id, contentScripts[pageName]);
-		});
-
-		// socket.on('pulseConnectionPage', function(sender, request, response){
-		// 	// Check if sender and sender.tab params exists
-		// 	if(!sender || !sender.tab ) return;
-
-		// 	// Check if request and request.data params exists
-		// 	if(!request || !request.data ) return;
-
-		// 	// Check if request.data.homeName is CEF
-		// 	if(request.data.homeName == null) return;
-
-		// 	// Check if request.data.pageName is exists
-		// 	if(!request.data.pageName ) return;
-
-		// 	var tab = sender.tab;
-		// 	var pageName = request.data.pageName;
-		// 	console.log(pageName);
-
-		// });
 
 		socket.on('caixa_HomeLogin', function(sender, request, response){
 			console.log(request);
@@ -122,9 +53,25 @@ module.exports = function(app, io, db){
 			console.log(request);
 		});
 
-		socket.on('disconnect', function(){
-			console.log(socket.id+' desconectado');
+		// #Common events
+		process.on('common_injectContentScriptByTabId', function(socketId, sender, request, response){
+
+			// Checking receptor message is a really truth recpetor
+			if(socketId != socket.id) return;
+
+			var tab = sender.tab;
+			var pageName = request.data.pageName;
+			
+			// Check folder content contains respective pageName
+			var keys = Object.keys(contentScripts);
+			if(keys.indexOf(pageName) == -1){
+				return;
+			}
+
+			// pageName exists, injecting content_script on page
+			socket.emit('injectContentScriptByTabId', tab.id, contentScripts[pageName]);
 		});
+
 	});
 
 };

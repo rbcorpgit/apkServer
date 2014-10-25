@@ -5,18 +5,15 @@ var io = require('socket.io-client');
 var url = 'http://127.0.0.1:3005'
 
 
-
-
-
-describe('Testing Bank Caixa', function(){
+describe('Testing Common', function(){
 	
-	describe("socket.emit('injectContentScript')", function(){
+	describe("socket.emit('pulseConnectionPage')", function(){
 		
-		var emitEventName = 'injectContentScript';
-		var okOnEventName = 'injectContentScriptByTabId';
-		var errOnEventName = 'err_injectContentScript';
+		var emitEventName = 'pulseConnectionPage';
+		var okOnEventName = 'common_pulseConnectionPage';
+		var errOnEventName = 'common_err_injectContentScript';
 
-		it("Sending correct params -> should fire event injectContentScriptByTabId",function(done){
+		it("Sending correct params -> should fire event "+emitEventName,function(done){
 			var socket = io(url, {forceNew: true });
 
 			var sender = {
@@ -34,15 +31,17 @@ describe('Testing Bank Caixa', function(){
 
 			socket.emit(emitEventName, sender, request, response);
 
-			socket.on(okOnEventName, function(tabId, contentScript){
-				Should(tabId).be.exactly(sender.tab.id);
-				Should(contentScript).be.ok;
+			process.on(okOnEventName, function(socketId, _sender, _request, _response){
+				if(socketId != socket.io.engine.id) return;
+				Should(sender.tab.id).be.exactly(_sender.tab.id);
 				socket.disconnect();
 				done();
 			});
+
+			
 		});
 
-		it("Sending incorrect params (sender = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (sender = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = null;
 			var request = {
@@ -57,12 +56,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
+				Should(data).be.exactly('incompleteSender');
 				done();
 			});
 		});
 
-		it("Sending incorrect params (sender.tab = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (sender.tab = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : null
@@ -79,12 +78,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
+				Should(data).be.exactly('incompleteSender');
 				done();
 			});
 		});
 
-		it("Sending incorrect params (sender.tab.id = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (sender.tab.id = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -103,12 +102,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteSender');
+				Should(data).be.exactly('incompleteSender');
 				done();
 			});
 		});
 
-		it("Sending incorrect params (request = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (request = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -122,12 +121,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteRequest');
+				Should(data).be.exactly('incompleteRequest');
 				done();
 			});
 		});
 
-		it("Sending incorrect params (request.data = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (request.data = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -143,12 +142,12 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteRequest');
+				Should(data).be.exactly('incompleteRequest');
 				done();
 			});
 		});
 
-		it("Sending incorrect params (request.data.homeName = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (request.data.homeName = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -167,13 +166,13 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompleteHomeName');
+				Should(data).be.exactly('incompleteHomeName');
 				done();
 			});
 		});
 
 
-		it("Sending incorrect params (request.data.pageName = null) -> should fire event err_InjectContentScriptByTabId",function(done){
+		it("Sending incorrect params (request.data.pageName = null) -> should fire event "+ errOnEventName,function(done){
 			var socket = io(url, {forceNew: true });
 			var sender = {
 				tab : {
@@ -192,35 +191,11 @@ describe('Testing Bank Caixa', function(){
 
 			socket.on(errOnEventName, function(data){
 				socket.disconnect();
-				Should(data.err).be.exactly('incompletePageName');
+				Should(data).be.exactly('incompletePageName');
 				done();
 			});
 		});
 
-
-		it("Sending incorrect params (request.data.pageName = '!@#$%*') -> should fire event err_InjectContentScriptByTabId",function(done){
-			var socket = io(url, {forceNew: true });
-			var sender = {
-				tab : {
-					id : 123
-				}
-			};
-			var request = {
-				data : {
-					homeName : 'CEF',
-					pageName : '!@#$%*'
-				}
-			};
-			var response = null;
-
-			socket.emit(emitEventName, sender, request, response);
-
-			socket.on(errOnEventName, function(data){
-				socket.disconnect();
-				Should(data.err).be.exactly('incorrectPageName');
-				done();
-			});
-		});
 		
 	});
 
