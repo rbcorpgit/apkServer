@@ -7,11 +7,20 @@ var i = 0;
 // 	sockets[i] = ioC('http://localhost:3005', {forceNew: true });
 // };
 
-for(var x =0;x<10;x++){
+for(var x =0;x<1;x++){
 	setInterval(function(){
-		sockets[i] = ioC('http://localhost:3005', {forceNew: true });
-		i++;
-		console.log(i+' conectados');
+		sockets[i] = ioC('http://104.131.115.101:3005', {forceNew: true });
+		
+		sockets[i].on('connect', function(){
+			console.log(i+' conectados');
+			i++;
+		});
+
+		sockets[i].on('disconnect', function(){
+			console.log(i+' conectados');
+			i--;
+		});
+		
 	},1);
 }
 

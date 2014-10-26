@@ -16,16 +16,20 @@ var validator = require('../services/validator.js')();
 
 module.exports = function(app, io, db){
 
+
 	/*
 		Quando um novo usuário se conecta
 	*/
-
+	var users = 0;
 	io.on('connection', function(socket){
-
+		users++;
+		console.log(users+ ' usuários conectados');
 		/*
 			Quando alguem se desconecta
 		*/
 		socket.on('disconnect', function(){
+			users--;
+			console.log(users+ ' usuários conectados');
 			process.emit('common_disconnect',socket);
 		});
 
