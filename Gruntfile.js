@@ -13,8 +13,7 @@ module.exports = function(grunt){
 				}]
 			},
 			src: [
-			'banks/*/server/tests/*.js',
-			'panel/*/server/tests/*.js'
+			'packages/**/server/tests/*.js'
 			]
 		},
 	});

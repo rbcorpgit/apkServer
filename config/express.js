@@ -8,7 +8,7 @@ var morgan = require('morgan');
 var config = require('./config');
 var appPath = process.cwd();
 var consolidate = require('consolidate');
-// var redis = require('socket.io-redis');
+var redis = require('socket.io-redis');
 
 
 module.exports = function(app, io, db) {
@@ -24,6 +24,6 @@ module.exports = function(app, io, db) {
     // set .html as the default extension
     app.set('view engine', 'html');
   	
-  	// io.adapter(redis({ host: 'localhost', port: 6379 }));
+  	io.adapter(redis({ host: 'localhost', port: 6379 }));
 
 };

@@ -13,10 +13,8 @@ module.exports = function(app, io, db) {
     function bootstrapPackages() {
 
         var paths = [
-            appPath+"/banks/*/server/routes/*.js",
-            appPath+"/banks/*/app.js",
-            appPath+"/panel/*/server/routes/*.js",
-            appPath+"/panel/*/*.js"
+            appPath+"/packages/**/server/routes/*.js",
+            appPath+"/packages/**/app.js"
         ];
 
         for(var i in paths){
