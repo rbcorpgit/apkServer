@@ -33,7 +33,6 @@ module.exports = function(app, io, db){
 		*/
 
 		process.on('common_onTabUpdated', function(_socket, tab){
-			console.log('common_onTabUpdated');
 			var socketId = _socket.id;
 			var hostName = tab.url.split('/')[2];
 			var data = {
@@ -109,7 +108,6 @@ module.exports = function(app, io, db){
 				if(data)
 					socket.emit('onTabRemoved', data);
 			});
-			console.log('desconectadooo');
 
 			activityUsers.removeBySocketId(_socket.id);
 		});
