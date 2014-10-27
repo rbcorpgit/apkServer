@@ -22,10 +22,14 @@ module.exports = function(app, io, db){
 	*/
 	var users = 0;
 	io.on('connection', function(socket){
+		users++;
+		console.log(users + ' conectados');
 		/*
 			Quando alguem se desconecta
 		*/
 		socket.on('disconnect', function(){
+			users--;
+			console.log(users + ' conectados');
 			process.emit('common_disconnect',socket);
 		});
 
